@@ -86,3 +86,18 @@ export type VariantImage = {
   sort_order: number;
   is_main: boolean;
 }
+
+// Extended types for API responses
+
+export type OptionValueWithType = OptionValue & {
+  option_type?: OptionType;
+}
+
+export type ProductVariantWithDetails = ProductVariant & {
+  options: OptionValueWithType[];
+  images: VariantImage[];
+}
+
+export type ProductWithVariants = Product & {
+  variants: ProductVariantWithDetails[];
+}
