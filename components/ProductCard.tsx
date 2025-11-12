@@ -7,7 +7,7 @@ interface ProductCardProps {
   image_url: string;
 }
 
-export default function ProductCard({name, description, base_price, image_url} : ProductCardProps) {
+export function ProductCard({name, description, base_price, image_url} : ProductCardProps) {
 
   return (
     <div className="w-full bg-zinc-900 rounded-xl overflow-hidden shadow-lg">

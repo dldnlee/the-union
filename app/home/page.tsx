@@ -1,6 +1,7 @@
 
 import { ProductWithVariants } from "@/models";
-import ProductCard from "../components/ProductCard";
+import { ProductCard } from "@/components/ProductCard";
+import { BannerComponent } from "@/components/BannerComponent";
 
 
 export default async function HomePage() {
@@ -21,6 +22,7 @@ export default async function HomePage() {
 
   return (
     <div className="w-full h-full p-8">
+      <BannerComponent />
       <h1 className="text-3xl font-bold mb-8">제품</h1>
 
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -29,6 +31,7 @@ export default async function HomePage() {
           const imageUrl = product.variants?.[0]?.images?.[0]?.image_url || '/placeholder.png';
 
           return (
+            
             <ProductCard
               key={product.id}
               name={product.name}
