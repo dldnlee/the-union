@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { clearCart } from '@/lib/cart';
 
@@ -11,7 +11,7 @@ import { clearCart } from '@/lib/cart';
  * Verifies payment, creates order, and redirects to complete page.
  */
 
-export default function PaymentCallbackPage() {
+function PaymentCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
@@ -120,35 +120,35 @@ export default function PaymentCallbackPage() {
           throw new Error(approveResult.message || 'Payment verification failed');
         }
 
-        // Step 2: Create order in database
-        console.log('Creating order in database...');
-        const createOrderResponse = await fetch('/api/orders/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            order: {
-              ...orderData.orderData,
-              payment_id: approveResult.data.paymentId,
-              shop_order_no: shopOrderNo,
-              payment_status: 'completed',
-              payment_method: 'card',
-            },
-            items: orderData.cartItems,
-          }),
-        });
+        // // Step 2: Create order in database
+        // console.log('Creating order in database...');
+        // const createOrderResponse = await fetch('/api/orders/create', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify({
+        //     order: {
+        //       ...orderData.orderData,
+        //       payment_id: approveResult.data.paymentId,
+        //       shop_order_no: shopOrderNo,
+        //       payment_status: 'completed',
+        //       payment_method: 'card',
+        //     },
+        //     items: orderData.cartItems,
+        //   }),
+        // });
 
-        if (!createOrderResponse.ok) {
-          const errorData = await createOrderResponse.json();
-          throw new Error(errorData.message || 'Order creation failed');
-        }
+        // if (!createOrderResponse.ok) {
+        //   const errorData = await createOrderResponse.json();
+        //   throw new Error(errorData.message || 'Order creation failed');
+        // }
 
-        const orderResult = await createOrderResponse.json();
-        console.log('Order created:', orderResult);
+        // const orderResult = await createOrderResponse.json();
+        // console.log('Order created:', orderResult);
 
         // Step 3: Clear cart and storage
-        clearCart();
+        // clearCart();
         try {
           sessionStorage.removeItem('pendingOrder');
           sessionStorage.removeItem('currentShopOrderNo');
@@ -167,7 +167,7 @@ export default function PaymentCallbackPage() {
           window.opener.postMessage(
             {
               type: 'PAYMENT_SUCCESS',
-              orderId: orderResult.orderId,
+              // orderId: orderResult.orderId,
             },
             window.location.origin
           );
@@ -179,7 +179,7 @@ export default function PaymentCallbackPage() {
         } else {
           // Redirect to complete page in redirect mode
           setTimeout(() => {
-            router.push(`/payment/complete?orderId=${orderResult.orderId}`);
+            router.push(`/payment/complete?orderId=${123412354}`);
           }, 1000);
         }
 
@@ -266,5 +266,20 @@ export default function PaymentCallbackPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-zinc-50 font-sans text-foreground flex items-center justify-center">
+        <div className="text-center p-8 bg-white rounded-lg border border-black/6 shadow-sm max-w-md">
+          <div className="w-16 h-16 border-4 border-zinc-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-black">결제 처리 중...</p>
+        </div>
+      </div>
+    }>
+      <PaymentCallbackContent />
+    </Suspense>
   );
 }
