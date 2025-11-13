@@ -40,6 +40,7 @@ export default async function HomePage() {
               description={product.description}
               base_price={product.base_price}
               image_url={imageUrl}
+              id={product.id}
             />
           );
         })}

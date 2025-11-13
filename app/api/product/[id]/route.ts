@@ -69,10 +69,20 @@ export async function GET(
           .eq('variant_id', variant.id)
           .order('sort_order', { ascending: true });
 
+        // Fetch inventory stock with delivery methods
+        const { data: inventory } = await supabase
+          .from('tu_inventory_stock')
+          .select(`
+            quantity_available,
+            delivery_method:tu_delivery_method(*)
+          `)
+          .eq('variant_id', variant.id);
+
         return {
           ...variant,
           options: optionValues || [],
           images: images || [],
+          inventory_stock: inventory || [],
         };
       })
     );
