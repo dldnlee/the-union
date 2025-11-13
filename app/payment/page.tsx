@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { formatKRW } from '@/lib/utils';
 import Link from 'next/link';
+import PayPalButton from '@/components/PayPalButton';
 
 type PaymentMethod = 'card' | 'paypal';
 
@@ -392,25 +393,75 @@ export default function PaymentPage() {
             </label>
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting || !isFormValid()}
-            className="w-full py-3 px-6 bg-black text-white rounded-md font-medium text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? '처리 중...' : '테스트 결제하기'}
-          </button>
+          {/* Submit Button / PayPal Button */}
+          {paymentMethod === 'paypal' ? (
+            <div className="space-y-4">
+              <p className="text-sm text-zinc-600 text-center">
+                PayPal 버튼을 클릭하여 결제를 진행해주세요
+              </p>
+              {isFormValid() ? (
+                <PayPalButton
+                  amount={testAmount / 1000} // Convert KRW to USD (approximate exchange rate)
+                  currency="USD"
+                  orderInfo={{
+                    goodsName: '테스트 상품',
+                    userId: email,
+                  }}
+                  onSuccess={(orderId) => {
+                    console.log('PayPal payment success:', orderId);
+                    // Store PayPal order info
+                    try {
+                      sessionStorage.setItem('paypalOrderId', orderId);
+                      localStorage.setItem('paypalOrderId', orderId);
+                    } catch (storageError) {
+                      console.error('Storage error:', storageError);
+                    }
+                    // Redirect to complete page
+                    window.location.href = `/payment/complete?orderId=${orderId}&method=paypal`;
+                  }}
+                  onError={(error) => {
+                    console.error('PayPal payment error:', error);
+                    alert(error);
+                    setIsSubmitting(false);
+                  }}
+                />
+              ) : (
+                <div className="p-4 bg-zinc-100 border border-zinc-300 rounded-md text-center">
+                  <p className="text-sm text-zinc-600">
+                    모든 필수 항목을 입력하고 약관에 동의해주세요
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              type="submit"
+              disabled={isSubmitting || !isFormValid()}
+              className="w-full py-3 px-6 bg-black text-white rounded-md font-medium text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? '처리 중...' : '테스트 결제하기'}
+            </button>
+          )}
         </form>
 
         {/* Test Info */}
         <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
           <h3 className="text-sm font-semibold text-amber-900 mb-2">테스트 안내</h3>
-          <ul className="text-xs text-amber-800 space-y-1">
-            <li>• EasyPay 테스트 환경으로 실제 결제가 발생하지 않습니다</li>
-            <li>• 테스트 카드 번호는 EasyPay/KICC에서 제공합니다</li>
-            <li>• R102 오류는 정상 동작이며 자동으로 처리됩니다</li>
-            <li>• 팝업이 차단되면 자동으로 리다이렉트 모드로 전환됩니다</li>
-          </ul>
+          {paymentMethod === 'card' ? (
+            <ul className="text-xs text-amber-800 space-y-1">
+              <li>• EasyPay 테스트 환경으로 실제 결제가 발생하지 않습니다</li>
+              <li>• 테스트 카드 번호는 EasyPay/KICC에서 제공합니다</li>
+              <li>• R102 오류는 정상 동작이며 자동으로 처리됩니다</li>
+              <li>• 팝업이 차단되면 자동으로 리다이렉트 모드로 전환됩니다</li>
+            </ul>
+          ) : (
+            <ul className="text-xs text-amber-800 space-y-1">
+              <li>• PayPal 샌드박스 환경으로 실제 결제가 발생하지 않습니다</li>
+              <li>• PayPal 테스트 계정으로 로그인하여 결제를 진행하세요</li>
+              <li>• 금액은 자동으로 USD로 환산됩니다 (약 1,000원 = 1 USD)</li>
+              <li>• PayPal 결제 창에서 직접 결제를 완료할 수 있습니다</li>
+            </ul>
+          )}
         </div>
       </main>
     </div>

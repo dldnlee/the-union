@@ -61,3 +61,6 @@ npm run lint
 ### Metadata
 - Export `metadata` object from pages for SEO
 - Type it as `Metadata` from "next"
+
+### Rules
+- Database schema models are in models.ts
